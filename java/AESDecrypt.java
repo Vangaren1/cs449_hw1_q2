@@ -6,7 +6,7 @@
 * 
 * file: AESDecrypt.java
 */
-
+ 
 import java.io.*;
 import java.util.*;
 import javax.crypto.*;
@@ -20,8 +20,8 @@ public class AESDecrypt{
 	public static String key;
 	public static String iv;
 
-	public static final int GCM_IV_LENGTH = 12;
-    public static final int GCM_TAG_LENGTH = 16;
+	public static final int cbc_IV_LENGTH = 12;
+    public static final int cbc_TAG_LENGTH = 16;
 
     public static void main(String args[])
     {
@@ -37,7 +37,7 @@ public class AESDecrypt{
 					System.out.println("process worked");
 					SecretKey sk = keyFromString(key);
 					System.out.println("key from string worked");
-					System.out.println(decrypt(encryptedMsg, sk , iv.getBytes() ));	
+					System.out.println(decrypt(encryptedMsg, key , iv.getBytes() ));	
 				}
 				catch(Exception e)
 				{
@@ -94,16 +94,17 @@ public class AESDecrypt{
 	* credit for this function taken from ;
 	* https://javainterviewpoint.com/java-aes-256-gcm-encryption-and-decryption/
 	*/
-	public static String decrypt(byte[] cipherText, SecretKey key, byte[] IV) throws Exception
+	public static String decrypt(byte[] cipherText, String key, byte[] IV) throws Exception
     {
         // Get Cipher Instance
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
         // Create SecretKeySpec
-        SecretKeySpec keySpec = new SecretKeySpec(key.getEncoded(), "AES");
+        SecretKeySpec keySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
         // Create GCMParameterSpec
-        GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, IV);
+        //GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, IV);
         // Initialize Cipher for DECRYPT_MODE
-        cipher.init(Cipher.DECRYPT_MODE, keySpec, gcmParameterSpec);
+        IvParameterSpec i = new IvParameterSpec(IV,0,cipher.getBlockSize());
+        cipher.init(Cipher.DECRYPT_MODE, keySpec, i);
         // Perform Decryption
         byte[] decryptedText = cipher.doFinal(cipherText);   
         return new String(decryptedText);

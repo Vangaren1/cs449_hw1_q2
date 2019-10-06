@@ -22,5 +22,5 @@ then
 	help
 else
 	getPass
-	openssl enc -aes-128-gcm -nosalt -in $2 -out $4 -pass pass:$password -p > $6
+	openssl enc -aes-128-cbc -nosalt -in $2 -out $4 -pass pass:$password -p > $6
 fi
