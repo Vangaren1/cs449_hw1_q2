@@ -24,6 +24,7 @@ public class AESDecrypt{
 	public static byte[] bkey;
 	public static String iv;
 	public static byte[] biv;
+	public static String dec;
 
 	public static final int cbc_IV_LENGTH = 12;
     public static final int cbc_TAG_LENGTH = 16;
@@ -31,21 +32,34 @@ public class AESDecrypt{
     public static void main(String args[])
     {
     	if(argCheck(args)){
-			// System.out.println("Formatted Correctly and files readable");
 			if(extract(args)){
-				// System.out.println(key);
-				// System.out.println("Key length " + key.length());
-				// System.out.println(iv);
-				// System.out.println("IV length " + iv.length());
+
 				try{
 					byte[] encryptedMsg = process(args[1]);
 					// System.out.println("process worked");
-					String dec = decrypt(encryptedMsg, key , iv );
+					dec = decrypt(encryptedMsg, key , iv );
 					System.out.println(dec);	
 				}
 				catch(Exception e)
 				{
-					System.out.println("Unable to decrypt" + e);
+					System.out.println("Unable to decrypt\n" + e);
+				}
+				finally
+				{
+					System.out.println("Decrypt Sucessfull");
+					FileOutputStream fout = null;
+					try{
+						fout = new FileOutputStream(args[3]);
+						fout.write((byte[])dec.getBytes());
+					}
+					catch(Exception e){
+						System.out.println("Unable to create the output file");
+					}
+					finally
+					{
+						/* write dec to the file*/
+
+					}
 				}
 			}
 			else{
@@ -109,7 +123,7 @@ public class AESDecrypt{
         // Initialize Cipher for DECRYPT_MODE
         cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
         // Perform Decryption
-        byte[] decryptedText = cipher.doFinal(Base64.getDecoder().decode(cipherText));   
+        byte[] decryptedText = cipher.doFinal(cipherText);   
         return new String(decryptedText);
     }
 
