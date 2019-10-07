@@ -33,13 +33,13 @@ public class AESDecrypt{
     	if(argCheck(args)){
 			// System.out.println("Formatted Correctly and files readable");
 			if(extract(args)){
-				System.out.println(key);
-				System.out.println("Key length " + key.length());
-				System.out.println(iv);
-				System.out.println("IV length " + iv.length());
+				// System.out.println(key);
+				// System.out.println("Key length " + key.length());
+				// System.out.println(iv);
+				// System.out.println("IV length " + iv.length());
 				try{
 					byte[] encryptedMsg = process(args[1]);
-					System.out.println("process worked");
+					// System.out.println("process worked");
 					String dec = decrypt(encryptedMsg, key , iv );
 					System.out.println(dec);	
 				}
@@ -115,16 +115,19 @@ public class AESDecrypt{
 
     public static byte[] toByteArray(String s)
     {
-    	System.out.println("Reading : "+s);
     	int len = s.length();
+    	byte temp;
     	byte[] data = new byte[len /2];
-    	for(int i=0; i< len; i += 2){
-    		System.out.print(s.charAt(i));
-    		System.out.print(s.charAt(i+1)+" ");
-    		data[i/2] = (byte) ((Character.digit(s.charAt(i),16) << 4) 
-    			+ Character.digit(s.charAt(i+2),16));
+    	for(int i=0; i < len ; i += 2){
+    		temp = (byte) (((Character.digit(s.charAt(i),16) & 15)<< 4) + (Character.digit(s.charAt(i+1),16) & 15));
+    		data[i/2] = temp;
     	}
+    	for(byte c : data){
+    		System.out.format("%02x ", c);
+    	}
+    	System.out.println();
     	return data;
+
     }
 
 	/*
@@ -140,17 +143,17 @@ public class AESDecrypt{
 				sc = new Scanner(sec);
 				while(sc.hasNextLine()){
 					key = sc.nextLine();
+					iv = sc.nextLine();
+
 					key = key.substring(4,key.length());
 					bkey = toByteArray(key);
-					iv = sc.nextLine();
-					System.out.println("iv after sc.nextLine" + iv);
+
 					iv = iv.substring(4,iv.length());
-					System.out.println("iv after iv.substring" + iv);
 					biv = toByteArray(iv);
 				}
 			}
 			catch(Exception e){
-				System.out.println("unable to open file.");
+				System.out.println("unable to open file. " + e);
 			}
 
 			return true;
