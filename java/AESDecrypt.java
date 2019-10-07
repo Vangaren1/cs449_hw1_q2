@@ -10,15 +10,20 @@
 import java.io.*;
 import java.util.*;
 import javax.crypto.*;
+import java.math.*;
 import java.lang.Object.*;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.*;
 import javax.crypto.spec.*;
+import java.util.Base64;
+import javax.crypto.spec.IvParameterSpec;
 
 public class AESDecrypt{
 
 	public static String key;
+	public static byte[] bkey;
 	public static String iv;
+	public static byte[] biv;
 
 	public static final int cbc_IV_LENGTH = 12;
     public static final int cbc_TAG_LENGTH = 16;
@@ -35,9 +40,8 @@ public class AESDecrypt{
 				try{
 					byte[] encryptedMsg = process(args[1]);
 					System.out.println("process worked");
-					SecretKey sk = keyFromString(key);
-					System.out.println("key from string worked");
-					System.out.println(decrypt(encryptedMsg, key , iv.getBytes() ));	
+					String dec = decrypt(encryptedMsg, key , iv );
+					System.out.println(dec);	
 				}
 				catch(Exception e)
 				{
@@ -82,32 +86,45 @@ public class AESDecrypt{
 		return buffer;
 	}
 
+	// public String toHex(String arg) {
+	//     return String.format("%040x", new BigInteger(1, arg.getBytes("UTF-8")));
+	// }
+
 /* decrypt */
 
-	// public static String decrypt(byte[] cipherText, SecretKey key, byte[] IV)
-	// {
-
-	// }
 
 	/*
 	* Decrypt one block of cipher text.
 	* credit for this function taken from ;
 	* https://javainterviewpoint.com/java-aes-256-gcm-encryption-and-decryption/
 	*/
-	public static String decrypt(byte[] cipherText, String key, byte[] IV) throws Exception
+	public static String decrypt(byte[] cipherText, String key, String iv) throws Exception
     {
         // Get Cipher Instance
         Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
         // Create SecretKeySpec
-        SecretKeySpec keySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
-        // Create GCMParameterSpec
-        //GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, IV);
+        SecretKeySpec keySpec = new SecretKeySpec(bkey, "AES");
+        // Create ivSpec
+        IvParameterSpec ivSpec = new IvParameterSpec(biv);
         // Initialize Cipher for DECRYPT_MODE
-        IvParameterSpec i = new IvParameterSpec(IV,0,cipher.getBlockSize());
-        cipher.init(Cipher.DECRYPT_MODE, keySpec, i);
+        cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
         // Perform Decryption
-        byte[] decryptedText = cipher.doFinal(cipherText);   
+        byte[] decryptedText = cipher.doFinal(Base64.getDecoder().decode(cipherText));   
         return new String(decryptedText);
+    }
+
+    public static byte[] toByteArray(String s)
+    {
+    	System.out.println("Reading : "+s);
+    	int len = s.length();
+    	byte[] data = new byte[len /2];
+    	for(int i=0; i< len; i += 2){
+    		System.out.print(s.charAt(i));
+    		System.out.print(s.charAt(i+1)+" ");
+    		data[i/2] = (byte) ((Character.digit(s.charAt(i),16) << 4) 
+    			+ Character.digit(s.charAt(i+2),16));
+    	}
+    	return data;
     }
 
 	/*
@@ -124,8 +141,12 @@ public class AESDecrypt{
 				while(sc.hasNextLine()){
 					key = sc.nextLine();
 					key = key.substring(4,key.length());
+					bkey = toByteArray(key);
 					iv = sc.nextLine();
+					System.out.println("iv after sc.nextLine" + iv);
 					iv = iv.substring(4,iv.length());
+					System.out.println("iv after iv.substring" + iv);
+					biv = toByteArray(iv);
 				}
 			}
 			catch(Exception e){
